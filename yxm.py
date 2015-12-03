@@ -15,7 +15,9 @@ parser = argparse.ArgumentParser(prog="yxm", description= \
 	   to a subreddit or subreddits.""")
 
 parser.add_argument('-d', '--db', help='Address of the redis db to use (ie: \'redis://127.0.0.1:6379/0\'', default='redis://127.0.0.1:6379/0')
-parser.add_argument('-c', '--channel', help='Name of the channel (ie: XXX where url is youtube.com/user/XXX)', required=True)
+channel_group = parser.add_mutually_exclusive_group(required=True)
+channel_group.add_argument('-c', '--channel', help='Name of the channel (ie: XXX where url is youtube.com/user/XXX)')
+channel_group.add_argument('-o', '--channel-id', help='ID of the channel (ie: XXX where url is youtube.com/channel/XXX)')
 parser.add_argument('-r', '--reddits', help='List of subreddits to post to (ie: \'yxm yxmtest\' where url is \'/r/yxm\' and \'/r/yxmtest\')', nargs='+', required=True)
 parser.add_argument('-b', '--blacklist', help='List of videos to exclude (ie: RoltZ7XjaAk where url is v=RoltZ7XjaAk)', nargs='*')
 parser.add_argument('-i', '--reddit-client-id', help='Reddit OAUTH client id', required=True)
@@ -48,7 +50,10 @@ if args.blacklist != None:
 	log("Blacklisted: %s" % str(args.blacklist))
 
 #Query channel for id of uploads playlist
-url = ("https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername=%s&key=%s" % (args.channel, args.youtube_api_key))
+if args.channel != None:
+	url = ("https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername=%s&key=%s" % (args.channel, args.youtube_api_key))
+else:
+	url = ("https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=%s&key=%s" % (args.channel_id, args.youtube_api_key))
 log(url)
 
 response = urllib2.urlopen(url)
